@@ -1,12 +1,13 @@
-// Login.js
 import React, { useState } from 'react';
-import { auth } from '../firebase'; // אם קובץ firebase נמצא בתיקיית src
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { Link } from 'react-router-dom'; // לייבוא רכיב הקישור
+import { useNavigate } from 'react-router-dom';
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "./firebase";
+import 'bootstrap/dist/css/bootstrap.min.css';
 
-function Login() {
+const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const navigate = useNavigate();
     const [error, setError] = useState('');
 
     const handleLogin = async (e) => {
@@ -14,36 +15,46 @@ function Login() {
         try {
             await signInWithEmailAndPassword(auth, email, password);
             alert("Login successful!");
+            navigate('/NotesWithVersions'); // הפניה לדף המודעות
         } catch (err) {
             setError(err.message);
         }
     };
 
     return (
-        <div className="login-container">
-            <h2>Login</h2>
-            {error && <p className="error-message">{error}</p>}
+        <div className="container mt-5">
+            <h2 className="mb-4">התחברות</h2>
             <form onSubmit={handleLogin}>
-                <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Email"
-                />
-                <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Password"
-                />
-                <button type="submit">Login</button>
+                <div className="mb-3">
+                    <label htmlFor="email" className="form-label">Email:</label>
+                    <input
+                        type="email"
+                        id="email"
+                        className="form-control"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                    />
+                </div>
+                <div className="mb-3">
+                    <label htmlFor="password" className="form-label">Password:</label>
+                    <input
+                        type="password"
+                        id="password"
+                        className="form-control"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                    />
+                </div>
+                {error && <div className="alert alert-danger">{error}</div>}
+                <button type="submit" className="btn btn-primary">Login</button>
             </form>
-            <div className="register-link">
-                <p>Don't have an account?</p>
-                <Link to="/register" className="register-button">Register</Link>
-            </div>
+            <p className="mt-3">
+                Don't have an account? <a href="/register" className="btn btn-link">Sign up</a>
+            </p>
         </div>
     );
-}
+};
 
 export default Login;

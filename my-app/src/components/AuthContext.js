@@ -1,6 +1,6 @@
 // AuthContext.js
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { auth, db } from '../firebase'; // אם קובץ firebase נמצא בתיקיית src
+import { auth, db } from './firebase'; // אם קובץ firebase נמצא בתיקיית src
 import { onAuthStateChanged } from 'firebase/auth';
 
 const AuthContext = createContext();
@@ -8,6 +8,7 @@ const AuthContext = createContext();
 export function useAuth() {
     return useContext(AuthContext);
 }
+
 
 export function AuthProvider({ children }) {
     const [currentUser, setCurrentUser] = useState(null);
