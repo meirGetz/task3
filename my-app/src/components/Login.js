@@ -15,7 +15,7 @@ const Login = () => {
         try {
             await signInWithEmailAndPassword(auth, email, password);
             alert("Login successful!");
-            navigate('/NotesWithVersions'); // הפניה לדף המודעות
+            navigate('/notes'); // הפניה לדף המודעות
         } catch (err) {
             setError(err.message);
         }

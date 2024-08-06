@@ -2,17 +2,22 @@ import React, { useState } from 'react';
 import { auth } from './firebase'; // נניח שהקובץ שלך לא כולל db
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import {redirect} from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
+
 
 function Register() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const navigate = useNavigate();
 
     const handleRegister = async (e) => {
         e.preventDefault();
         try {
             await createUserWithEmailAndPassword(auth, email, password);
             alert("Registration successful!");
+            navigate("/login");
         } catch (err) {
             setError(err.message);
         }

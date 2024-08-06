@@ -13,12 +13,9 @@ const Navbar = () => {
                             <Link className="nav-link btn btn-primary" to="/">Log in</Link>
                         </li>
                         <li className="nav-item">
-                            <Link className="nav-link btn btn-success" to="/NotesWithVersions">Notes</Link>
+                            <Link className="nav-link btn btn-success" to="/notes">Notes</Link>
                         </li>
-                        {/* <li className="nav-item">
-                            <Link className="nav-link btn btn-info" to="/about">About</Link>
-                        </li> */}
-                        {/* הוסף כאן קישורים נוספים לפי הצורך */}
+
                     </ul>
                 </div>
             </div>
