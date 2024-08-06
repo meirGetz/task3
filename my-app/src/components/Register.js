@@ -1,40 +1,27 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { auth } from './firebase'; // נניח שהקובץ שלך לא כולל db
+import { createUserWithEmailAndPassword } from 'firebase/auth';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-const Register = () => {
+function Register() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const navigate = useNavigate();
+    const [error, setError] = useState('');
 
     const handleRegister = async (e) => {
         e.preventDefault();
-
-        if (password !== confirmPassword) {
-            alert('Passwords do not match');
-            return;
-        }
-
-        // Here you would perform your registration action
-        // For example, send a request to the server with user details
-        const response = await fetch('/api/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password }),
-        });
-
-        if (response.ok) {
-            navigate('/login'); // Redirect to login page
-        } else {
-            // Handle error case
-            alert('Registration failed');
+        try {
+            await createUserWithEmailAndPassword(auth, email, password);
+            alert("Registration successful!");
+        } catch (err) {
+            setError(err.message);
         }
     };
 
     return (
         <div className="container mt-5">
             <h2 className="mb-4">Register</h2>
+            {error && <div className="alert alert-danger" role="alert">{error}</div>}
             <form onSubmit={handleRegister}>
                 <div className="mb-3">
                     <label htmlFor="email" className="form-label">Email:</label>
@@ -44,6 +31,7 @@ const Register = () => {
                         className="form-control"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
+                        placeholder="Enter your email"
                         required
                     />
                 </div>
@@ -55,27 +43,14 @@ const Register = () => {
                         className="form-control"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        required
-                    />
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="confirmPassword" className="form-label">Confirm Password:</label>
-                    <input
-                        type="password"
-                        id="confirmPassword"
-                        className="form-control"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="Enter your password"
                         required
                     />
                 </div>
                 <button type="submit" className="btn btn-primary">Register</button>
             </form>
-            <p className="mt-3">
-                Already have an account? <a href="/" className="btn btn-link">Log in here</a>
-            </p>
         </div>
     );
-};
+}
 
 export default Register;

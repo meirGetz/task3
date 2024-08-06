@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from './firebase';
-import { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, getDoc } from 'firebase/firestore'; // הוספת getDoc
 import { useAuth } from './AuthContext';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -15,7 +15,7 @@ function NotesWithVersions() {
 
     useEffect(() => {
         const unsubscribe = onSnapshot(notesCollectionRef, (snapshot) => {
-            const notesData = snapshot.docs.map(doc => ({
+            const notesData = snapshot.docs.map((doc) => ({
                 id: doc.id,
                 ...doc.data()
             }));
@@ -27,13 +27,25 @@ function NotesWithVersions() {
         return () => unsubscribe();
     }, []);
 
+    // הוספת בדיקת התחברות ל-Firestore
+    useEffect(() => {
+        const checkConnection = async () => {
+            try {
+                await getDoc(doc(db, "test", "testDoc")); // ודא שהמסמך קיים
+                console.log("Connected to Firestore");
+            } catch (error) {
+                console.error("Connection error: ", error);
+            }
+        };
+        checkConnection();
+    }, []);
+
     const addNote = async () => {
         if (newNote.trim() === '') return;
         try {
             await addDoc(notesCollectionRef, {
                 content: newNote,
-                author: currentUser ? currentUser.uid : 'anonymous',
-                authorName: currentUser ? currentUser.displayName || 'Unknown' : 'Unknown',
+                authorEmail: currentUser ? currentUser.email || 'Unknown' : 'Unknown',
                 createdAt: new Date(),
                 versions: [{ content: newNote, timestamp: new Date() }]
             });
@@ -108,13 +120,15 @@ function NotesWithVersions() {
                                     onChange={(e) => setEditContent(e.target.value)}
                                 />
                                 <button className="btn btn-success me-2" onClick={saveEdit}>Save</button>
-                                <button className="btn btn-secondary" onClick={() => setEditNoteId(null)}>Cancel</button>
+                                <button className="btn btn-secondary" onClick={() => setEditNoteId(null)}>back</button>
                             </>
                         ) : (
                             <>
-                                <div className="d-flex justify-content-between align-items-center">
-                                    <strong>{note.authorName || 'Anonymous'}:</strong> {note.content}
-                                    <div>
+                                <div className="d-flex flex-column">
+                                    <div className="d-flex justify-content-between align-items-center">
+                                        <strong>{note.authorEmail.slice(0,note.authorEmail.indexOf('@')) || 'Anonymous'} :</strong> {note.content}
+                                    </div>
+                                    <div className="mt-2">
                                         <button className="btn btn-warning me-2" onClick={() => startEdit(note)}>Edit</button>
                                         <button className="btn btn-danger" onClick={() => deleteNote(note.id)}>Delete</button>
                                         <button className="btn btn-info ms-2" onClick={() => toggleHistory(note.id)}>

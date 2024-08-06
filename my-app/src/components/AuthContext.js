@@ -1,14 +1,13 @@
 // AuthContext.js
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { auth, db } from './firebase'; // אם קובץ firebase נמצא בתיקיית src
+import React, { useContext, useState, useEffect } from 'react';
+import { auth } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 
-const AuthContext = createContext();
+const AuthContext = React.createContext();
 
 export function useAuth() {
     return useContext(AuthContext);
 }
-
 
 export function AuthProvider({ children }) {
     const [currentUser, setCurrentUser] = useState(null);
@@ -21,9 +20,9 @@ export function AuthProvider({ children }) {
         return unsubscribe;
     }, []);
 
-    return (
-        <AuthContext.Provider value={{ currentUser }}>
-            {children}
-        </AuthContext.Provider>
-    );
+    const value = {
+        currentUser,
+    };
+
+    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
