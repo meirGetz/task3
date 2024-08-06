@@ -46,6 +46,7 @@ function NotesWithVersions() {
             await addDoc(notesCollectionRef, {
                 content: newNote,
                 authorEmail: currentUser ? currentUser.email || 'Unknown' : 'Unknown',
+                authorId: currentUser ? currentUser.uid : 'Unknown',
                 createdAt: new Date(),
                 versions: [{ content: newNote, timestamp: new Date() }]
             });
@@ -56,8 +57,12 @@ function NotesWithVersions() {
     };
 
     const startEdit = (note) => {
-        setEditNoteId(note.id);
-        setEditContent(note.content);
+        if (note.authorId === currentUser?.uid) {
+            setEditNoteId(note.id);
+            setEditContent(note.content);
+        } else {
+            console.error("You are not authorized to edit this note.");
+        }
     };
 
     const saveEdit = async () => {
@@ -67,7 +72,7 @@ function NotesWithVersions() {
             const noteDocRef = doc(db, 'notes', editNoteId);
             const noteToUpdate = notes.find(note => note.id === editNoteId);
 
-            if (noteToUpdate) {
+            if (noteToUpdate && noteToUpdate.authorId === currentUser?.uid) {
                 await updateDoc(noteDocRef, {
                     content: editContent,
                     versions: [...noteToUpdate.versions, { content: editContent, timestamp: new Date() }]
@@ -76,6 +81,8 @@ function NotesWithVersions() {
                 // Clear the edit state
                 setEditNoteId(null);
                 setEditContent('');
+            } else {
+                console.error("You are not authorized to update this note.");
             }
         } catch (error) {
             console.error("Error updating note: ", error);
@@ -85,7 +92,13 @@ function NotesWithVersions() {
     const deleteNote = async (id) => {
         try {
             const noteDocRef = doc(db, 'notes', id);
-            await deleteDoc(noteDocRef);
+            const noteToDelete = notes.find(note => note.id === id);
+
+            if (noteToDelete && noteToDelete.authorId === currentUser?.uid) {
+                await deleteDoc(noteDocRef);
+            } else {
+                console.error("You are not authorized to delete this note.");
+            }
         } catch (error) {
             console.error("Error deleting note: ", error);
         }
@@ -120,17 +133,21 @@ function NotesWithVersions() {
                                     onChange={(e) => setEditContent(e.target.value)}
                                 />
                                 <button className="btn btn-success me-2" onClick={saveEdit}>Save</button>
-                                <button className="btn btn-secondary" onClick={() => setEditNoteId(null)}>back</button>
+                                <button className="btn btn-secondary" onClick={() => setEditNoteId(null)}>Back</button>
                             </>
                         ) : (
                             <>
                                 <div className="d-flex flex-column">
                                     <div className="d-flex justify-content-between align-items-center">
-                                        <strong>{note.authorEmail.slice(0,note.authorEmail.indexOf('@')) || 'Anonymous'} :</strong> {note.content}
+                                        <strong>{note.authorEmail.slice(0, note.authorEmail.indexOf('@')) || 'Anonymous'}:</strong> {note.content}
                                     </div>
                                     <div className="mt-2">
-                                        <button className="btn btn-warning me-2" onClick={() => startEdit(note)}>Edit</button>
-                                        <button className="btn btn-danger" onClick={() => deleteNote(note.id)}>Delete</button>
+                                        {note.authorId === currentUser?.uid && (
+                                            <>
+                                                <button className="btn btn-warning me-2" onClick={() => startEdit(note)}>Edit</button>
+                                                <button className="btn btn-danger" onClick={() => deleteNote(note.id)}>Delete</button>
+                                            </>
+                                        )}
                                         <button className="btn btn-info ms-2" onClick={() => toggleHistory(note.id)}>
                                             {showHistoryForNoteId === note.id ? 'Hide History' : 'Show History'}
                                         </button>
